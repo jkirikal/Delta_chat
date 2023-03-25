@@ -1,48 +1,35 @@
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.io.DataOutputStream;
-import java.io.DataInputStream;
-
 
 public class Server {
+    public static void main(String[] args) throws Exception {
+        System.out.println("Server running");
+        int portNumber = 1337;
+        try (ServerSocket ss = new ServerSocket(portNumber)) {
+            try (Socket socket1 = ss.accept()) {
+                try(Socket socket2 = ss.accept()){
+                    DataInputStream dataIn1 = new DataInputStream(socket1.getInputStream());
+                    DataOutputStream dataOut1 = new DataOutputStream(socket1.getOutputStream());
+                    DataInputStream dataIn2 = new DataInputStream(socket2.getInputStream());
+                    DataOutputStream dataOut2 = new DataOutputStream(socket2.getOutputStream());
 
-    //Chose a random integer that is not 1-1024
-    private int portNr = 1033;
-
-    //Same problem with Strings as in class User
-    private String whatServerSees;
-    private String receivedMsg = "x";
-    public String getWhatServerSees() {
-        return whatServerSees;
-    }
-
-    public void serverProcesses() throws IOException {
-        //serversocket waits for a connection
-        try (ServerSocket ss = new ServerSocket(portNr)) {
-            //socket attempts to accept and establish connection
-            try (Socket s = ss.accept()) {
-
-                //using DataStreams because unlike Streams they have readUTF and writeUTF
-                DataInputStream receivedMsgDataStream = new DataInputStream(s.getInputStream());
-                DataOutputStream replyStreamToReceivedMsg = new DataOutputStream(s.getOutputStream());
-
-                //StringBuffer object, unlike String, is mutable
-                StringBuffer sb = new StringBuffer();
-
-
-                receivedMsg = receivedMsgDataStream.readUTF();
-
-                if (receivedMsg.equals("stop")) {
-                    replyStreamToReceivedMsg.writeUTF("Server received stop call");
-                    return;
+                    ServerReaderWriter rw1 = new ServerReaderWriter(dataIn1, dataOut2);
+                    ServerReaderWriter rw2 = new ServerReaderWriter(dataIn2, dataOut1);
+                    Thread communication1 = new Thread(rw1);
+                    Thread communication2 = new Thread(rw2);
+                    communication2.start();
+                    communication1.start();
+                    System.out.println("Chat created");
+                    communication1.join();
+                    communication2.join();
+                    System.out.println("Server closed");
                 }
-                sb.append("User has successfully sent this message to server: '").append(receivedMsg).append("'");
-                whatServerSees = sb.toString();
-
-                replyStreamToReceivedMsg.writeUTF(
-                        "Server has received your last message (msg contents: '"
-                                + receivedMsg + "')");
+            }
+            catch (EOFException e){
+                System.out.println("All clients left");
             }
         }
     }
