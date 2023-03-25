@@ -12,7 +12,9 @@ public class MessageWriter implements Runnable{
         String msg = "";
         BufferedReader messageReader = new BufferedReader(new InputStreamReader(System.in));
         try{
+            //if user writes "exit" to console, the thread stops running
             while(!msg.equals("exit")){
+                //reads an entry from command line and writes to output stream
                 msg = messageReader.readLine();
                 out.writeUTF(msg);
             }

@@ -1,17 +1,20 @@
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.InputStreamReader;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
-public class Client{
+//Note - Client1 and Client2 have duplicate code for now.
+//  in the future that should be avoided
+public class Client1 {
     public static void main(String[] args) {
-        try (Socket socket = new Socket("127.0.0.1", 1337)) {
+        try (Socket socket = new Socket("127.0.0.1", 1337)) {//closes the socket after code has finished
+            //creates input/output streams for the socket
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
+
+            /*separate threads for dealing with writing output and reading input
+                  because if we read the input and write output on the same thread,
+                  the reading of stream input would need to wait after the user to write something
+                  as output*/
             MessageReader reader = new MessageReader(in);
             Thread readMessages = new Thread(reader);
             readMessages.start();

@@ -1,6 +1,7 @@
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+//writes input of Client1 to the output of Client2 and vice versa
 public class ServerReaderWriter implements Runnable{
     DataInputStream dataIn;
     DataOutputStream dataOut;
