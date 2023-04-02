@@ -12,7 +12,7 @@ public class MessageReader implements Runnable{
             while(true){
                 //reads from inputstream
                 String received = in.readUTF();
-                if(received.equals("exit")){
+                if(received.contains("exit")){
                     //if other participant wrote "exit" to his/her output, then this user closes
                     //own input and ends this thread
                     in.close();

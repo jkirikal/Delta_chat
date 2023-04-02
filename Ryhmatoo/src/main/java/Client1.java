@@ -7,6 +7,7 @@ import java.net.Socket;
 public class Client1 {
     public static void main(String[] args) {
         try (Socket socket = new Socket("127.0.0.1", 1337)) {//closes the socket after code has finished
+
             //creates input/output streams for the socket
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
