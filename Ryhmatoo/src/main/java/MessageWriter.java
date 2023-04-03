@@ -16,7 +16,7 @@ public class MessageWriter implements Runnable{
             String name = messageReader.readLine();
             System.out.println("You are now in a chat. Write something to the other participant");
             //if user writes "exit" to console, the thread stops running
-            while(!msg.equals("exit")){
+            while(!msg.equalsIgnoreCase("exit")){
                 //reads an entry from command line and writes to output stream
                 msg = messageReader.readLine();
                 out.writeUTF("["+name+"] "+msg);

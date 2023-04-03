@@ -6,7 +6,7 @@ import java.net.Socket;
 
 public class Client2 {
     public static void main(String[] args) {
-        try (Socket socket = new Socket("127.0.0.1", 1337)) {
+        try (Socket socket = new Socket("192.168.0.100", 1337)) {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             DataInputStream in = new DataInputStream(socket.getInputStream());
             MessageReader reader = new MessageReader(in);
