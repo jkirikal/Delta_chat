@@ -2,20 +2,20 @@ import java.io.DataInputStream;
 
 
 public class MessageReader implements Runnable{
-    DataInputStream in;
-    public MessageReader(DataInputStream in){
-        this.in = in;
+    private DataInputStream dataIn;
+    public MessageReader(DataInputStream dataIn){
+        this.dataIn = dataIn;
     }
 
     public void run(){
-        try{
-            while(true){
+        try {
+            while (true) {
                 //reads from inputstream
-                String received = in.readUTF();
-                if(received.contains("exit")){
+                String received = dataIn.readUTF();
+                if (received.contains("exit")) {
                     //if other participant wrote "exit" to his/her output, then this user closes
                     //own input and ends this thread
-                    in.close();
+                    dataIn.close();
                     System.out.println("The other participant left, write 'exit' to leave");
                     break;
                 }
@@ -23,7 +23,7 @@ public class MessageReader implements Runnable{
                 System.out.println(received);
             }
         }
-        catch (Exception e){
+        catch (Exception e) {
             System.out.println("You left the chat");
         }
     }

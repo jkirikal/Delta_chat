@@ -12,7 +12,7 @@ public class ServerReaderWriter implements Runnable{
 
     public void run(){
         try{
-            while (true){
+            while (true) {
                 String sonum = dataIn.readUTF();
                 dataOut.writeUTF(sonum);
             }
