@@ -1,4 +1,4 @@
-package main.java;
+//package main.java;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class AuthenticationServer implements Runnable{
     private DataInputStream dataIn;
     private DataOutputStream dataOut;
-    private final String filePath = "/Ryhmatoo/src/main/data/data.txt";
+    private final String filePath = "src/main/data/data.txt";
 
 
     public AuthenticationServer(DataInputStream dataIn, DataOutputStream dataOut) {
@@ -20,10 +20,9 @@ public class AuthenticationServer implements Runnable{
     }
 
     private boolean auth(String username, String password) {
-        String path = System.getProperty("user.dir");
-        String fullPath = path + this.filePath;
+        File file = new File(filePath);
         HashMap<String,String> data = new HashMap<>();
-        try (Scanner scanner = new Scanner(Path.of(fullPath),"UTF-8")) {
+        try (Scanner scanner = new Scanner(file,"UTF-8")) {
             while (scanner.hasNextLine()) {
                 String[] credentials = scanner.nextLine().trim().split(":");
                 data.put(credentials[0],credentials[1]);
@@ -48,9 +47,7 @@ public class AuthenticationServer implements Runnable{
                 dataOut.writeUTF("Password shouldn't contain the space. Suggest new password: ");
                 password = dataIn.readUTF();
             }
-            String path = System.getProperty("user.dir");
-            String fullPath = path + this.filePath;
-            Files.writeString(Path.of(fullPath),username+":"+password+"\n",
+            Files.writeString(Path.of(filePath),username+":"+password+"\n",
                     StandardCharsets.UTF_8,StandardOpenOption.APPEND);
         } catch (IOException e) {
             throw new RuntimeException(e);
