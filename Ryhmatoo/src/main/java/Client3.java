@@ -10,7 +10,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
 
-public class Client1 {
+public class Client3 {
     public static void main(String[] args) throws Exception {
         String name = null;
         int portNumberAuth = 2337;

@@ -1,14 +1,21 @@
-import main.java.AuthenticationClient;
+package main.java;
+// 127.0.0.1 =  "localhost"
+
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.net.Socket;
 
-//Note - Client1 and Client2 have duplicate code for now.
-//  in the future that should be avoided
 public class Client2 {
     public static void main(String[] args) throws Exception {
         String name = null;
-        try (Socket socket = new Socket("localhost", 2337)) {
+        int portNumberAuth = 2337;
+        int portNumberChat = 1337;
+        try (Socket socket = new Socket("127.0.0.1", portNumberAuth)) {
             DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
             DataInputStream dataIn = new DataInputStream(socket.getInputStream());
             AuthenticationClient authClient = new AuthenticationClient(dataIn,dataOut);
@@ -18,29 +25,30 @@ public class Client2 {
         catch (Exception e){
             System.out.println(e);
         }
-        try (Socket socket = new Socket("localhost", 1337)) {//closes the socket after code has finished
 
-            //creates input/output streams for the socket
-            DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
-            DataInputStream dataIn = new DataInputStream(socket.getInputStream());
-
-            /*separate threads for dealing with writing output and reading input
-                  because if we read the input and write output on the same thread,
-                  the reading of stream input would need to wait after the user to write something
-                  as output*/
-
-            MessageReader reader = new MessageReader(dataIn);
-            Thread readMessages = new Thread(reader);
-            readMessages.start();
-            MessageWriter writer = new MessageWriter(dataOut,name);
-            Thread writeMessages = new Thread(writer);
-            writeMessages.start();
-            writeMessages.join();
-            dataOut.close();
-            readMessages.join();
-        }
-        catch (Exception e){
-            System.out.println(e);
-        }
+        MulticastSocket multicastSocket = new MulticastSocket(portNumberChat);
+        InetAddress groupChat = InetAddress.getByName("224.0.0.10");
+        multicastSocket.joinGroup(groupChat);
+        Thread readMessages = new Thread(() -> {
+            try {
+                while (true) {
+                    byte[] buffer = new byte[1024];
+                    DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
+                    multicastSocket.receive(receivePacket);
+                    String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                    if (!receivePacket.getAddress().equals(InetAddress.getLocalHost())) {
+                        System.out.println(message);
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        readMessages.start();
+        MessageWriterGroup writerGroup = new MessageWriterGroup(name,portNumberChat,groupChat,multicastSocket);
+        Thread writeMessages = new Thread(writerGroup);
+        writeMessages.start();
+        multicastSocket.leaveGroup(groupChat);
+        multicastSocket.close();
     }
 }
