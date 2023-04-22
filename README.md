@@ -4,6 +4,6 @@ Katariina, Artemi ja Johani rühmatöö aines "Objektorienteeritud programmeerim
 
 Kuidas programmi jooksutada:
   1. Jooksuta "Sever" programmi
-  2. Jooksuta "Client1" ja "Client2" programme
+  2. Jooksuta "Client1", "Client2" ja "Client3" programme
   3. Kui kõik 3 programmi jooksevad, saab kliendi terminali sõnumeid kirjutada, mis jõuavad teise kliendi terminali ja vastupidi.
  
