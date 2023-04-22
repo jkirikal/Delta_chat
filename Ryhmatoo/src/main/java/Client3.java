@@ -9,6 +9,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Client3 {
     public static void main(String[] args) throws Exception {
@@ -27,28 +28,27 @@ public class Client3 {
         }
 
         MulticastSocket multicastSocket = new MulticastSocket(portNumberChat);
-        InetAddress groupChat = InetAddress.getByName("224.0.0.10");
+        InetAddress groupChat = InetAddress.getByName("239.0.0.0");
         multicastSocket.joinGroup(groupChat);
-        Thread readMessages = new Thread(() -> {
-            try {
-                while (true) {
-                    byte[] buffer = new byte[1024];
-                    DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length);
-                    multicastSocket.receive(receivePacket);
-                    String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                    if (!receivePacket.getAddress().equals(InetAddress.getLocalHost())) {
-                        System.out.println(message);
-                    }
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        MessageReaderGroup readerGroup = new MessageReaderGroup(multicastSocket, name, groupChat, portNumberChat);
+        Thread readMessages = new Thread(readerGroup);
+        Scanner sc = new Scanner(System.in);
         readMessages.start();
-        MessageWriterGroup writerGroup = new MessageWriterGroup(name,portNumberChat,groupChat,multicastSocket);
-        Thread writeMessages = new Thread(writerGroup);
-        writeMessages.start();
-        multicastSocket.leaveGroup(groupChat);
-        multicastSocket.close();
+        while(true)
+        {
+            String message;
+            message = sc.nextLine();
+            if(message.equalsIgnoreCase("exit"))
+            {
+                multicastSocket.leaveGroup(groupChat);
+                multicastSocket.close();
+                break;
+            }
+            message = name + ": " + message;
+            byte[] buffer = message.getBytes();
+            DatagramPacket datagram = new
+                    DatagramPacket(buffer,buffer.length,groupChat,portNumberChat);
+            multicastSocket.send(datagram);
+        }
     }
 }
