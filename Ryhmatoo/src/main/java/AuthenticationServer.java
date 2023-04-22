@@ -1,4 +1,3 @@
-package main.java;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -11,7 +10,7 @@ import java.util.Scanner;
 public class AuthenticationServer implements Runnable{
     private DataInputStream dataIn;
     private DataOutputStream dataOut;
-    private final String filePath = "/Ryhmatoo/src/main/data/data.txt";
+    private final String filePath = "src/main/data/data.txt";
 
 
     public AuthenticationServer(DataInputStream dataIn, DataOutputStream dataOut) {
@@ -20,9 +19,7 @@ public class AuthenticationServer implements Runnable{
     }
 
     private boolean auth(String username, String password) {
-        String path = System.getProperty("user.dir");
-        String fullPath = path + this.filePath;
-        File file = new File(fullPath);
+        File file = new File(filePath);
         HashMap<String,String> data = new HashMap<>();
         try (Scanner scanner = new Scanner(file,"UTF-8")) {
             while (scanner.hasNextLine()) {

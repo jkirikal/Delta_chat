@@ -36,6 +36,11 @@ public class RoomChanger implements Runnable{
                     dataOut.writeUTF("READ");
                     message = dataIn.readUTF();
                 }
+                if(!rooms.containsKey(message)){
+                    dataOut.writeUTF("Please enter the correct room.");
+                    dataOut.writeUTF("READ");
+                    message = dataIn.readUTF();
+                }
             }
             if(rooms.containsKey(message)){
                 int port = rooms.get(message);

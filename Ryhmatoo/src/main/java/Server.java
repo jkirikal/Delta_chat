@@ -1,9 +1,5 @@
-import java.net.Socket;
-import java.util.ArrayList;
-
 
 public class Server {
-    private static ArrayList<Socket> sockets = new ArrayList<>();
     public static void main(String[] args) throws Exception {
         System.out.println("Server running");
         int authPort = 2337;
