@@ -1,4 +1,4 @@
-//package main.java;
+package main.java;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -12,13 +12,6 @@ public class Server {
     public static void main(String[] args) throws Exception {
         System.out.println("Server running");
         int portNumber = 2337;
-
-        // create ServerSocket to wait for authentication done.
-        // this ServerSocket is for chatting
-
-        //waits for both clients to connect with the port, creates two separate sockets
-        //creates input and output streams for both of the sockets
-        // this ServerSocket is for authentication
         try (ServerSocket ssAuth = new ServerSocket(portNumber)) {
             int i = 1;
             while (true) {
@@ -33,7 +26,5 @@ public class Server {
                 i++;
             }
         }
-        //waits for both clients to connect with the port, creates two separate sockets
-        //creates input and output streams for both of the sockets
     }
 }
