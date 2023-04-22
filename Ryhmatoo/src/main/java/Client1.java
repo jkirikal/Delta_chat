@@ -1,6 +1,4 @@
-//package main.java;
-// 127.0.0.1 =  "localhost"
-
+package main.java;
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -43,7 +41,8 @@ public class Client1 {
         Thread readMessages = new Thread(readerGroup);
         Scanner sc = new Scanner(System.in);
         readMessages.start();
-        while(true)
+        System.out.println("You are now in a chat. Write 'exit' if u want to leave.");
+        while (true)
         {
             String message;
             message = sc.nextLine();
