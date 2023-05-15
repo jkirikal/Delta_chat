@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -23,7 +25,7 @@ public class Client3 {
         try (Socket socket = new Socket("127.0.0.1", portNumberRooms)) {
             DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
             DataInputStream dataIn = new DataInputStream(socket.getInputStream());
-            chatPort = chooseRoom(dataIn, dataOut);
+            chatPort = chooseRoom(dataIn, dataOut, name, socket);
 
         }
         catch (Exception e){
@@ -39,7 +41,7 @@ public class Client3 {
         Thread readMessages = new Thread(readerGroup);
         Scanner sc = new Scanner(System.in);
         readMessages.start();
-        while(true)
+        while (true)
         {
             String message;
             message = sc.nextLine();
@@ -47,6 +49,11 @@ public class Client3 {
             {
                 multicastSocket.leaveGroup(groupChat);
                 multicastSocket.close();
+                //to remove room counter
+                try(Socket socket = new Socket("127.0.0.1", portNumberRooms)){
+                    DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
+                    exitRoom(dataOut, name);
+                }
                 break;
             }
             else if(message.equalsIgnoreCase("change")){
@@ -56,8 +63,7 @@ public class Client3 {
                 try (Socket socket = new Socket("127.0.0.1", portNumberRooms)) {
                     DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
                     DataInputStream dataIn = new DataInputStream(socket.getInputStream());
-                    chatPort = chooseRoom(dataIn, dataOut);
-
+                    chatPort = chooseRoom(dataIn, dataOut,name, socket);
                     multicastSocket = new MulticastSocket(chatPort);
                     groupChat = InetAddress.getByName("239.0.0.0");
                     multicastSocket.joinGroup(groupChat);
@@ -102,7 +108,8 @@ public class Client3 {
         return username;
     }
 
-    public static int chooseRoom(DataInputStream dataIn, DataOutputStream dataOut) throws Exception{
+    public static int chooseRoom(DataInputStream dataIn, DataOutputStream dataOut,String name, Socket socket) throws Exception{
+        dataOut.writeUTF(name);
         int port = 0;
         String input = null;
         Scanner sc = new Scanner(System.in);
@@ -116,11 +123,21 @@ public class Client3 {
             dataOut.writeUTF(input);
             income = dataIn.readUTF();
         }
+        port = Integer.parseInt(income.split(":")[1]);
+        if(port==-1){
+            System.out.println("You closed the program.");;
+            socket.close();
+            System.exit(0);
+        }
         System.out.println("Welcome to room: "+input);
         System.out.println("To leave the chat, write 'exit', to change the room, write 'change'.");
-        port = Integer.parseInt(income.split(":")[1]);
         dataOut.close();
         dataIn.close();
         return port;
+    }
+
+    public static void exitRoom(DataOutputStream dataOut, String name) throws Exception{
+        dataOut.writeUTF(name);
+        dataOut.close();
     }
 }

@@ -1,3 +1,4 @@
+package main.java;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -10,7 +11,7 @@ import java.util.Scanner;
 public class AuthenticationServer implements Runnable{
     private DataInputStream dataIn;
     private DataOutputStream dataOut;
-    private final String filePath = "src/main/data/data.txt";
+    private final String filePath = "Ryhmatoo/src/main/data/data.txt";
 
 
     public AuthenticationServer(DataInputStream dataIn, DataOutputStream dataOut) {

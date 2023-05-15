@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -12,12 +14,13 @@ public class MultipleRooms implements Runnable{
 
     @Override
     public void run(){
+        RoomCounter counter = new RoomCounter();
         try (ServerSocket ssRooms = new ServerSocket(roomPort)) {
             while (true) {
                 Socket socketRoom = ssRooms.accept();
                 DataInputStream dataIn = new DataInputStream(socketRoom.getInputStream());
                 DataOutputStream dataOut = new DataOutputStream(socketRoom.getOutputStream());
-                RoomChanger roomChange = new RoomChanger(dataIn, dataOut);
+                RoomChanger roomChange = new RoomChanger(dataIn, dataOut, counter);
                 Thread roomChanger = new Thread(roomChange);
                 roomChanger.start();
             }
