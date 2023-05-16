@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+//creates a thread for every connection to a socket
+//The threads deal with chatroom-related operations
 public class MultipleRooms implements Runnable{
     private final int roomPort;
     public MultipleRooms(int roomPort) {

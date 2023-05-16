@@ -3,6 +3,8 @@ package main.java;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
+//Counts how many people are currently in a chat room
 public class RoomCounter {
     private HashMap<Integer, ArrayList<String>> roomsAndChatters;
 

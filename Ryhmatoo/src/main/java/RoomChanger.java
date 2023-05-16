@@ -30,31 +30,26 @@ public class RoomChanger implements Runnable{
     @Override
     public void run() {
         try{
+            //Gets the username of a connected user and removes the person from all rooms
             String name = dataIn.readUTF();
             counter.getRoomsAndChatters().forEach((key, value)-> counter.getRoomsAndChatters().get(key).remove(name));
-            LinkedHashMap<String, Integer> rooms = readRooms(filePath);
+
             dataOut.writeUTF("Choose a room to join by entering the corresponding name.");
             dataOut.writeUTF("To see available commands, write 'help'.");
+
+            LinkedHashMap<String, Integer> rooms = readRooms(filePath);
             displayRooms(rooms);
-            dataOut.writeUTF("READ");
-            String message = dataIn.readUTF();
+            String message = newMessage(dataIn, dataOut);
             while(true){
                 if(message.equalsIgnoreCase("help")){
-                    dataOut.writeUTF("Available commands: ");
-                    dataOut.writeUTF("\t'[room name]' -- joins a room");
-                    dataOut.writeUTF("\t'new' -- creates a new room ");
-                    dataOut.writeUTF("\t'refresh' -- refreshes the available room list and active user counts");
-                    dataOut.writeUTF("\t'show [room name]' -- shows who is in a specific room");
-                    dataOut.writeUTF("\t'exit' -- exit the program");
-                    dataOut.writeUTF("READ");
-                    message = dataIn.readUTF();
+                    writeHelp(dataOut);
+                    message = newMessage(dataIn, dataOut);
                 }
                 else if(message.equalsIgnoreCase("new")){
                     createRoom(rooms);
                     rooms = readRooms(filePath);
                     displayRooms(rooms);
-                    dataOut.writeUTF("READ");
-                    message = dataIn.readUTF();
+                    message = newMessage(dataIn, dataOut);
                 }
                 else if(rooms.containsKey(message)){
                     int port = rooms.get(message);
@@ -63,19 +58,8 @@ public class RoomChanger implements Runnable{
                     break;
                 }
                 else if(message.contains("show")){
-                    String room = message.split(" ")[1];
-                    if(!rooms.containsKey(room)) {
-                        dataOut.writeUTF("Please enter the correct room.");
-                    }
-                    else{
-                        int port = rooms.get(room);
-                        dataOut.writeUTF("People in "+room+": ");
-                        for (String s : counter.getRoomsAndChatters().get(port)) {
-                            dataOut.writeUTF("\t"+s+",");
-                        }
-                    }
-                    dataOut.writeUTF("READ");
-                    message = dataIn.readUTF();
+                    showUsers(message, rooms, dataOut);
+                    message = newMessage(dataIn, dataOut);
                 }
                 else if(message.equalsIgnoreCase("exit")){
                     int port = -1;
@@ -86,13 +70,11 @@ public class RoomChanger implements Runnable{
                 else if(message.equalsIgnoreCase("refresh")){
                     rooms = readRooms(filePath);
                     displayRooms(rooms);
-                    dataOut.writeUTF("READ");
-                    message = dataIn.readUTF();
+                    message = newMessage(dataIn, dataOut);
                 }
                 else{
                     dataOut.writeUTF("Please enter a correct command.");
-                    dataOut.writeUTF("READ");
-                    message = dataIn.readUTF();
+                    message = newMessage(dataIn, dataOut);
                 }
             }
         }
@@ -105,7 +87,8 @@ public class RoomChanger implements Runnable{
 
     }
 
-    public void createRoom(LinkedHashMap<String, Integer> rooms) throws Exception{
+    //creates a new chatroom, assigns a port to it and saves the room to the data file.
+    private void createRoom(LinkedHashMap<String, Integer> rooms) throws Exception{
        dataOut.writeUTF("Enter a name for the new chat room: ");
        dataOut.writeUTF("READ");
        String name = dataIn.readUTF();
@@ -122,7 +105,8 @@ public class RoomChanger implements Runnable{
        dataOut.writeUTF("Room created!");
     }
 
-    public void displayRooms(LinkedHashMap<String, Integer> rooms) throws Exception{
+    //Displays available rooms
+    private void displayRooms(LinkedHashMap<String, Integer> rooms) throws Exception{
         dataOut.writeUTF("Available rooms: ");
         if (rooms.size() == 0) dataOut.writeUTF("No rooms available. Write 'new' to create one!");
         else {
@@ -140,7 +124,8 @@ public class RoomChanger implements Runnable{
 
     }
 
-    public LinkedHashMap<String, Integer> readRooms(String fileName) throws Exception{
+    //Reads all the room data in from a data file
+    private LinkedHashMap<String, Integer> readRooms(String fileName) throws Exception{
         LinkedHashMap<String, Integer> rooms = new LinkedHashMap<>();
         File file = new File(fileName);
         try(Scanner sc = new Scanner(file, StandardCharsets.UTF_8)){
@@ -150,5 +135,35 @@ public class RoomChanger implements Runnable{
             }
         }
         return rooms;
+    }
+
+    //First writes 'READ' to output, to let the user know that server is waiting for a new command.
+    //Reads in a new command from the user.
+    private String newMessage(DataInputStream dataIn, DataOutputStream dataOut) throws IOException {
+        dataOut.writeUTF("READ");
+        return dataIn.readUTF();
+    }
+
+    private void writeHelp(DataOutputStream dataOut) throws IOException {
+        dataOut.writeUTF("Available commands: ");
+        dataOut.writeUTF("\t'[room name]' -- joins a room");
+        dataOut.writeUTF("\t'new' -- creates a new room ");
+        dataOut.writeUTF("\t'refresh' -- refreshes the available room list and active user counts");
+        dataOut.writeUTF("\t'show [room name]' -- shows who is in a specific room");
+        dataOut.writeUTF("\t'exit' -- exit the program");
+    }
+
+    private void showUsers(String message, LinkedHashMap<String, Integer> rooms, DataOutputStream dataOut) throws IOException {
+        String room = message.split(" ")[1];
+        if(!rooms.containsKey(room)) {
+            dataOut.writeUTF("Please enter the correct room.");
+        }
+        else{
+            int port = rooms.get(room);
+            dataOut.writeUTF("People in "+room+": ");
+            for (String s : counter.getRoomsAndChatters().get(port)) {
+                dataOut.writeUTF("\t"+s+",");
+            }
+        }
     }
 }

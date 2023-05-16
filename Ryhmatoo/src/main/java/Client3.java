@@ -13,6 +13,9 @@ public class Client3 {
         int portNumberAuth = 2337;
         int portNumberRooms = 2338;
         int chatPort = 0;
+        InetAddress groupChat = InetAddress.getByName("239.0.0.0");
+
+        //user authentication ------------------------------------------------
         try (Socket socket = new Socket("127.0.0.1", portNumberAuth)) {
             DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
             DataInputStream dataIn = new DataInputStream(socket.getInputStream());
@@ -21,7 +24,9 @@ public class Client3 {
         catch (Exception e){
             System.out.println(e);
         }
+        //------------------------------------------------------------------
 
+        //Choosing a chatroom ----------------------------------------------
         try (Socket socket = new Socket("127.0.0.1", portNumberRooms)) {
             DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
             DataInputStream dataIn = new DataInputStream(socket.getInputStream());
@@ -31,61 +36,57 @@ public class Client3 {
         catch (Exception e){
             System.out.println(e);
         }
+        //------------------------------------------------------------------
 
 
+        //Creates the connection to a chatroom
+        MulticastSocket multicastSocket = createConnection(chatPort, name, groupChat);
 
-        MulticastSocket multicastSocket = new MulticastSocket(chatPort);
-        InetAddress groupChat = InetAddress.getByName("239.0.0.0");
-        multicastSocket.joinGroup(groupChat);
-        MessageReaderGroup readerGroup = new MessageReaderGroup(multicastSocket, name, groupChat, chatPort);
-        Thread readMessages = new Thread(readerGroup);
+        //Takes user input from console
         Scanner sc = new Scanner(System.in);
-        readMessages.start();
-        while (true)
+        String message;
+        while(true)
         {
-            String message;
             message = sc.nextLine();
+
+            //if user wants to exit the program -------------------------------
             if(message.equalsIgnoreCase("exit"))
             {
-                multicastSocket.leaveGroup(groupChat);
-                multicastSocket.close();
-                //to remove room counter
+                leaveGroup(multicastSocket, groupChat);
                 try(Socket socket = new Socket("127.0.0.1", portNumberRooms)){
                     DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
                     exitRoom(dataOut, name);
                 }
                 break;
             }
-            else if(message.equalsIgnoreCase("change")){
-                multicastSocket.leaveGroup(groupChat);
-                multicastSocket.close();
+            //------------------------------------------------------------------
 
+            //if user wants to change the chatroom -----------------------------
+            else if(message.equalsIgnoreCase("change")){
+                leaveGroup(multicastSocket, groupChat);
                 try (Socket socket = new Socket("127.0.0.1", portNumberRooms)) {
                     DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream());
                     DataInputStream dataIn = new DataInputStream(socket.getInputStream());
                     chatPort = chooseRoom(dataIn, dataOut,name, socket);
-                    multicastSocket = new MulticastSocket(chatPort);
-                    groupChat = InetAddress.getByName("239.0.0.0");
-                    multicastSocket.joinGroup(groupChat);
-                    readerGroup = new MessageReaderGroup(multicastSocket, name, groupChat, chatPort);
-                    readMessages = new Thread(readerGroup);
-                    readMessages.start();
+                    multicastSocket = createConnection(chatPort, name, groupChat);
                     continue;
                 }
                 catch (Exception e){
                     System.out.println(e);
                 }
-
             }
+            //-------------------------------------------------------------------
+
+            //Sends the message -------------------------------------------------
             message = name + ": " + message;
             byte[] buffer = message.getBytes();
-            DatagramPacket datagram = new
-                    DatagramPacket(buffer,buffer.length,groupChat,chatPort);
+            DatagramPacket datagram = new DatagramPacket(buffer,buffer.length,groupChat,chatPort);
             multicastSocket.send(datagram);
+            //--------------------------------------------------------------------
         }
     }
 
-    public static String authentication(DataInputStream dataIn, DataOutputStream dataOut){
+    private static String authentication(DataInputStream dataIn, DataOutputStream dataOut){
         String username = null;
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         try {
@@ -108,7 +109,7 @@ public class Client3 {
         return username;
     }
 
-    public static int chooseRoom(DataInputStream dataIn, DataOutputStream dataOut,String name, Socket socket) throws Exception{
+    private static int chooseRoom(DataInputStream dataIn, DataOutputStream dataOut,String name, Socket socket) throws Exception{
         dataOut.writeUTF(name);
         int port = 0;
         String input = null;
@@ -136,8 +137,23 @@ public class Client3 {
         return port;
     }
 
-    public static void exitRoom(DataOutputStream dataOut, String name) throws Exception{
+    private static void exitRoom(DataOutputStream dataOut, String name) throws Exception{
         dataOut.writeUTF(name);
         dataOut.close();
+    }
+
+    private static MulticastSocket createConnection(int chatPort, String name, InetAddress groupChat) throws IOException {
+        MulticastSocket multicastSocket = new MulticastSocket(chatPort);
+        multicastSocket.joinGroup(groupChat);
+        MessageReaderGroup readerGroup = new MessageReaderGroup(multicastSocket, name, groupChat, chatPort);
+        Thread readMessages = new Thread(readerGroup);
+        readMessages.start();
+
+        return multicastSocket;
+    }
+
+    private static void leaveGroup(MulticastSocket multicastSocket, InetAddress groupChat) throws IOException {
+        multicastSocket.leaveGroup(groupChat);
+        multicastSocket.close();
     }
 }

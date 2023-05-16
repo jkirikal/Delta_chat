@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+//creates a thread for every connection to a socket
+//The threads deal with authentication-related operations
 public class MultipleAuthentications implements Runnable{
     private int authPort;
     public MultipleAuthentications(int authPort) {

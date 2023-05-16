@@ -6,8 +6,8 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 
+//reads messages sent to a chatroom
 public class MessageReaderGroup  implements Runnable{
-    private final byte[] buffer = new byte[256];
     private final MulticastSocket multicastSocket;
     private String name;
     int port;
