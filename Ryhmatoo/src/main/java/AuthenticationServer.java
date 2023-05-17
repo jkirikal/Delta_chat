@@ -5,35 +5,41 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Scanner;
 
 public class AuthenticationServer implements Runnable{
     private DataInputStream dataIn;
     private DataOutputStream dataOut;
-    private final String filePath = "Ryhmatoo/src/main/data/data.txt";
-
+    private final String dbURL = "jdbc:postgresql://localhost/deltachat";
+    private final String user = "auth";
+    private final String pass = "deltachatauth";
 
     public AuthenticationServer(DataInputStream dataIn, DataOutputStream dataOut) {
         this.dataIn = dataIn;
         this.dataOut = dataOut;
     }
 
+
     private boolean auth(String username, String password) {
-        File file = new File(filePath);
-        HashMap<String,String> data = new HashMap<>();
-        try (Scanner scanner = new Scanner(file,"UTF-8")) {
-            while (scanner.hasNextLine()) {
-                String[] credentials = scanner.nextLine().trim().split(":");
-                data.put(credentials[0],credentials[1]);
+        HashMap<String, String> data = new HashMap<>();
+        try {
+            Connection conn = DriverManager.getConnection(dbURL, user, pass);
+            PreparedStatement ps = conn.prepareStatement("select username, password from users;");
+            try (ResultSet resultSet = ps.executeQuery()) {
+                while (resultSet.next()) {
+                    String chatUser = resultSet.getString(1);
+                    String chatPassword = resultSet.getString(2);
+                    data.put(chatUser, chatPassword);
+                }
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
         if (data.containsKey(username) && data.get(username).equals(password)) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -47,8 +53,13 @@ public class AuthenticationServer implements Runnable{
                 dataOut.writeUTF("Password shouldn't contain the space. Suggest new password: ");
                 password = dataIn.readUTF();
             }
-            Files.writeString(Path.of(filePath),username+":"+password+"\n",
-                    StandardCharsets.UTF_8,StandardOpenOption.APPEND);
+            Connection conn = DriverManager.getConnection(dbURL, user, pass);
+            PreparedStatement ps = conn.prepareStatement("insert into users (username, password) values (?, ?);");
+            ps.setString(1,username);
+            ps.setString(2,password);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

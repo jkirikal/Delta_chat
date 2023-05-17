@@ -40,39 +40,33 @@ public class RoomChanger implements Runnable{
             LinkedHashMap<String, Integer> rooms = readRooms(filePath);
             displayRooms(rooms);
             String message = newMessage(dataIn, dataOut);
-            while(true){
-                if(message.equalsIgnoreCase("help")){
+            while (true) {
+                if (message.equalsIgnoreCase("help")) {
                     writeHelp(dataOut);
                     message = newMessage(dataIn, dataOut);
-                }
-                else if(message.equalsIgnoreCase("new")){
+                } else if (message.equalsIgnoreCase("new")) {
                     createRoom(rooms);
                     rooms = readRooms(filePath);
                     displayRooms(rooms);
                     message = newMessage(dataIn, dataOut);
-                }
-                else if(rooms.containsKey(message)){
+                } else if (rooms.containsKey(message)) {
                     int port = rooms.get(message);
-                    dataOut.writeUTF("Port:"+port);
+                    dataOut.writeUTF("Port:" + port);
                     counter.getRoomsAndChatters().get(port).add(name);
                     break;
-                }
-                else if(message.contains("show")){
+                } else if (message.contains("show")) {
                     showUsers(message, rooms, dataOut);
                     message = newMessage(dataIn, dataOut);
-                }
-                else if(message.equalsIgnoreCase("exit")){
+                } else if (message.equalsIgnoreCase("exit")) {
                     int port = -1;
                     System.out.println("A user has left");
-                    dataOut.writeUTF("Port:"+port);
+                    dataOut.writeUTF("Port:" + port);
                     break;
-                }
-                else if(message.equalsIgnoreCase("refresh")){
+                } else if (message.equalsIgnoreCase("refresh")) {
                     rooms = readRooms(filePath);
                     displayRooms(rooms);
                     message = newMessage(dataIn, dataOut);
-                }
-                else{
+                } else {
                     dataOut.writeUTF("Please enter a correct command.");
                     message = newMessage(dataIn, dataOut);
                 }
@@ -93,12 +87,11 @@ public class RoomChanger implements Runnable{
        dataOut.writeUTF("READ");
        String name = dataIn.readUTF();
        int newPort;
-
-       if(rooms.size()==0) newPort = 1234;
-       else{
+       if (rooms.size() == 0) newPort = 1234;
+       else {
            ArrayList<Integer> ports = new ArrayList<>();
            rooms.forEach((key, value) -> ports.add(value));
-           newPort = Collections.max(ports) +1;
+           newPort = Collections.max(ports) + 1;
        }
         Files.writeString(Path.of(filePath),name+":"+newPort+"\n",
                 StandardCharsets.UTF_8, StandardOpenOption.APPEND);

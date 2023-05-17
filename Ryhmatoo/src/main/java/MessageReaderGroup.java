@@ -7,11 +7,14 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 
 //reads messages sent to a chatroom
-public class MessageReaderGroup  implements Runnable{
+public class MessageReaderGroup  implements Runnable {
     private final MulticastSocket multicastSocket;
     private String name;
-    int port;
+    private int port;
     InetAddress groupChat;
+    private final String dbURL = "jdbc:postgresql://localhost/deltachat";
+    private final String user = "admin";
+    private final String pass = "deltachatadmin";
     public MessageReaderGroup(MulticastSocket multicastSocket,String name, InetAddress groupChat, int port) {
         this.multicastSocket = multicastSocket;
         this.name = name;

@@ -26,6 +26,7 @@ public class MultipleAuthentications implements Runnable{
                 AuthenticationServer authServer = new AuthenticationServer(dataIn, dataOut);
                 Thread authentication = new Thread(authServer);
                 authentication.start();
+                System.out.println("Authentication ended for user nr. " + i);
                 i++;
             }
         }
